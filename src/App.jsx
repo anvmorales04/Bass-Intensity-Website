@@ -179,41 +179,29 @@ function GalleryCarousel({ images, className = '' }) {
 }
 
 const ServicesSection = () => {
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [scrollOffset, setScrollOffset] = useState(0);
   const containerRef = useRef(null);
 
-  const handleMouseMove = (e) => {
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    // Increased the divisor from 20 to 35 to make the movement a bit smoother/gentler 
-    // since it's tracking over a much larger area now.
-    const moveX = ((e.clientX - rect.left) - centerX) / 35; 
-    const moveY = ((e.clientY - rect.top) - centerY) / 35;
-    
-    setMousePos({ x: moveX, y: moveY });
-  };
+  useEffect(() => {
+    const handleScroll = () => setScrollOffset(window.scrollY);
 
-  const handleMouseLeave = () => {
-    setMousePos({ x: 0, y: 0 });
-  };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <section 
       id="services" 
       className="page-section services-interactive-section"
       ref={containerRef}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
     >
       {/* --- Ambient Background Squares (Now floating behind everything) --- */}
-      <div className="ambient-square ambient-square-1" style={{ transform: `translate(${mousePos.x * 1.5}px, ${mousePos.y * 1.5}px)` }}></div>
-      <div className="ambient-square ambient-square-2" style={{ transform: `translate(${mousePos.x * -2.5}px, ${mousePos.y * -2.5}px)` }}></div>
-      <div className="ambient-square ambient-square-3" style={{ transform: `translate(${mousePos.x * 0.8}px, ${mousePos.y * 1.2}px)` }}></div>
-      <div className="ambient-square ambient-square-4" style={{ transform: `translate(${mousePos.x * -1.2}px, ${mousePos.y * -0.5}px)` }}></div>
-      <div className="ambient-square ambient-square-5" style={{ transform: `translate(${mousePos.x * 1.8}px, ${mousePos.y * -1.8}px)` }}></div>
+      <div className="ambient-square ambient-square-1" style={{ transform: `translate(${scrollOffset * 0.04}px, ${scrollOffset * 0.03}px)` }}></div>
+      <div className="ambient-square ambient-square-2" style={{ transform: `translate(${scrollOffset * -0.06}px, ${scrollOffset * -0.04}px)` }}></div>
+      <div className="ambient-square ambient-square-3" style={{ transform: `translate(${scrollOffset * 0.02}px, ${scrollOffset * 0.04}px)` }}></div>
+      <div className="ambient-square ambient-square-4" style={{ transform: `translate(${scrollOffset * -0.03}px, ${scrollOffset * -0.02}px)` }}></div>
+      <div className="ambient-square ambient-square-5" style={{ transform: `translate(${scrollOffset * 0.05}px, ${scrollOffset * -0.05}px)` }}></div>
 
       {/* --- All Services Content --- */}
       <div className="section-2">
@@ -267,7 +255,7 @@ const ServicesSection = () => {
                   </span>
                   <span className="contact-action-arrow" aria-hidden="true">&rarr;</span>
                 </a>
-                <a className="contact-action" href="tel:+639179610770">
+                <a className="contact-action" href="mailto:arislm4@yahoo.com.ph">
                   <img src={phoneIcon} alt="" />
                   <span className="contact-action-copy">
                     <strong>Phone Number</strong>
@@ -307,7 +295,7 @@ function App() {
   const [isSubtitleRevealed, setIsSubtitleRevealed] = useState(false);
   const [isButtonsRevealed, setIsButtonsRevealed] = useState(false); 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [slantMousePos, setSlantMousePos] = useState({ x: 0, y: 0 });
+  const [slantScrollOffset, setSlantScrollOffset] = useState(0);
   
   const [showExpandedGallery, setShowExpandedGallery] = useState(false);
   const [fullGalleryLightbox, setFullGalleryLightbox] = useState(null);
@@ -389,15 +377,13 @@ function App() {
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-  const handleSlantMouseMove = (event) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    setSlantMousePos({
-      x: ((event.clientX - bounds.left) / bounds.width - 0.5) * 2,
-      y: ((event.clientY - bounds.top) / bounds.height - 0.5) * 2,
-    });
-  };
+  useEffect(() => {
+    const handleScroll = () => setSlantScrollOffset(window.scrollY);
 
-  const resetSlantMousePos = () => setSlantMousePos({ x: 0, y: 0 });
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   
 
@@ -567,15 +553,13 @@ function App() {
 
           <div
             className="section-1 hollow-slant-container"
-            onMouseMove={handleSlantMouseMove}
-            onMouseLeave={resetSlantMousePos}
           >
             <div className="slant-ambient-rectangles" aria-hidden="true">
-              <span className="slant-ambient-rectangle slant-ambient-rectangle-1" style={{ transform: `translate(${slantMousePos.x * 12}px, ${slantMousePos.y * 8}px) rotate(-12deg)` }}></span>
-              <span className="slant-ambient-rectangle slant-ambient-rectangle-2" style={{ transform: `translate(${slantMousePos.x * -18}px, ${slantMousePos.y * -12}px) rotate(-12deg)` }}></span>
-              <span className="slant-ambient-rectangle slant-ambient-rectangle-3" style={{ transform: `translate(${slantMousePos.x * 24}px, ${slantMousePos.y * 16}px) rotate(-12deg)` }}></span>
-              <span className="slant-ambient-rectangle slant-ambient-rectangle-4" style={{ transform: `translate(${slantMousePos.x * -30}px, ${slantMousePos.y * -20}px) rotate(-12deg)` }}></span>
-              <span className="slant-ambient-rectangle slant-ambient-rectangle-5" style={{ transform: `translate(${slantMousePos.x * 36}px, ${slantMousePos.y * 24}px) rotate(-12deg)` }}></span>
+              <span className="slant-ambient-rectangle slant-ambient-rectangle-1" style={{ transform: `translate(${slantScrollOffset * 0.024}px, ${slantScrollOffset * 0.016}px) rotate(-12deg)` }}></span>
+              <span className="slant-ambient-rectangle slant-ambient-rectangle-2" style={{ transform: `translate(${slantScrollOffset * -0.036}px, ${slantScrollOffset * -0.024}px) rotate(-12deg)` }}></span>
+              <span className="slant-ambient-rectangle slant-ambient-rectangle-3" style={{ transform: `translate(${slantScrollOffset * 0.048}px, ${slantScrollOffset * 0.032}px) rotate(-12deg)` }}></span>
+              <span className="slant-ambient-rectangle slant-ambient-rectangle-4" style={{ transform: `translate(${slantScrollOffset * -0.06}px, ${slantScrollOffset * -0.04}px) rotate(-12deg)` }}></span>
+              <span className="slant-ambient-rectangle slant-ambient-rectangle-5" style={{ transform: `translate(${slantScrollOffset * 0.072}px, ${slantScrollOffset * 0.048}px) rotate(-12deg)` }}></span>
             </div>
 
             <ScrollReveal>
