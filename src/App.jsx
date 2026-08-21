@@ -403,7 +403,14 @@ function App() {
         </ul>
 
         <div className="top-bar-action">
-          <button className="book-btn">Book us!</button>
+          <a
+            className="book-btn"
+            href="https://www.facebook.com/aris.l.morales"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Book us!
+          </a>
           
           <button 
             className="mobile-menu-btn" 
