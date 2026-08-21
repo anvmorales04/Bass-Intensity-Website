@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import bassintWhiteIcon from './assets/icons/bassint-icon-white.png';
-import backgroundVideo from './assets/videos/video-background.mp4'; 
+import backgroundVideo from './assets/videos/Video-Background.mp4'; 
 import phoneIcon from './assets/icons/phone-icon.png'; 
 
 import emailIcon from './assets/icons/email-icon.png';
