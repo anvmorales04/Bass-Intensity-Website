@@ -38,6 +38,7 @@ import img25 from './assets/gallery/pic25.jpg';
 
 const initialGalleryImages = [img7, img8, img9, img10, img11, img12, img13, img14, img15];
 const extendedGalleryImages = [img16, img17, img18, img19, img20, img21, img22, img23, img24, img25];
+const allGalleryImages = [...initialGalleryImages, ...extendedGalleryImages];
 
 const getImageOrientation = (src) => {
   return new Promise((resolve) => {
@@ -85,20 +86,22 @@ const sectionTwoImages = [img5, img2, img6];
 
 function GalleryCarousel({ images, className = '' }) {
   const [activeIndex, setActiveIndex] = useState(1);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(null);
+  const touchStartX = useRef(null);
+  const mouseStartX = useRef(null);
 
   useEffect(() => {
     setActiveIndex(1);
-    setSelectedImage(null);
+    setSelectedImageIndex(null);
   }, [images]);
 
   useEffect(() => {
-    document.body.style.overflow = selectedImage ? 'hidden' : '';
+    document.body.style.overflow = selectedImageIndex !== null ? 'hidden' : '';
 
     return () => {
       document.body.style.overflow = '';
     };
-  }, [selectedImage]);
+  }, [selectedImageIndex]);
 
   const previousIndex = (activeIndex - 1 + images.length) % images.length;
   const nextIndex = (activeIndex + 1) % images.length;
@@ -112,18 +115,58 @@ function GalleryCarousel({ images, className = '' }) {
   const handlePrevious = (event) => {
     event.stopPropagation();
     setActiveIndex((current) => (current - 1 + images.length) % images.length);
+    setSelectedImageIndex((current) => current === null ? null : (current - 1 + images.length) % images.length);
   };
 
   const handleNext = (event) => {
     event.stopPropagation();
     setActiveIndex((current) => (current + 1) % images.length);
+    setSelectedImageIndex((current) => current === null ? null : (current + 1) % images.length);
   };
 
   const handleCardClick = (currentCard) => {
-    setSelectedImage(currentCard.src);
+    setSelectedImageIndex(currentCard.key);
   };
 
-  const closeLightbox = () => setSelectedImage(null);
+  const handleLightboxTouchStart = (event) => {
+    touchStartX.current = event.touches[0].clientX;
+  };
+
+  const handleLightboxTouchEnd = (event) => {
+    if (touchStartX.current === null) return;
+
+    const touchDelta = event.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+
+    if (Math.abs(touchDelta) < 40) return;
+
+    if (touchDelta > 0) {
+      handlePrevious(event);
+    } else {
+      handleNext(event);
+    }
+  };
+
+  const handleLightboxMouseDown = (event) => {
+    mouseStartX.current = event.clientX;
+  };
+
+  const handleLightboxMouseUp = (event) => {
+    if (mouseStartX.current === null) return;
+
+    const mouseDelta = event.clientX - mouseStartX.current;
+    mouseStartX.current = null;
+
+    if (Math.abs(mouseDelta) < 40) return;
+
+    if (mouseDelta > 0) {
+      handlePrevious(event);
+    } else {
+      handleNext(event);
+    }
+  };
+
+  const closeLightbox = () => setSelectedImageIndex(null);
 
   return (
     <>
@@ -161,16 +204,28 @@ function GalleryCarousel({ images, className = '' }) {
         </button>
       </div>
 
-      {selectedImage && createPortal(
+      {selectedImageIndex !== null && createPortal(
         <div className="lightbox-backdrop" onClick={closeLightbox} role="dialog" aria-modal="true">
           <div className="lightbox-panel" onClick={(event) => event.stopPropagation()}>
             <button type="button" className="lightbox-close" onClick={closeLightbox} aria-label="Close image view">
               &times;
             </button>
-            <div className="lightbox-frame">
-              <img src={selectedImage} alt="Expanded gallery view" className="lightbox-image" />
+            <div
+              className="lightbox-frame"
+              onTouchStart={handleLightboxTouchStart}
+              onTouchEnd={handleLightboxTouchEnd}
+              onMouseDown={handleLightboxMouseDown}
+              onMouseUp={handleLightboxMouseUp}
+            >
+              <img src={images[selectedImageIndex]} alt="Expanded gallery view" className="lightbox-image" />
             </div>
           </div>
+          <button type="button" className="lightbox-nav lightbox-nav-left" onClick={handlePrevious} aria-label="Previous image">
+            &#8249;
+          </button>
+          <button type="button" className="lightbox-nav lightbox-nav-right" onClick={handleNext} aria-label="Next image">
+            &#8250;
+          </button>
         </div>,
         document.body
       )}
@@ -259,7 +314,7 @@ const ServicesSection = () => {
                   <img src={phoneIcon} alt="" />
                   <span className="contact-action-copy">
                     <strong>Phone Number</strong>
-                    <small>+63 917-961-0770</small>
+                    <small>0917 961 0770</small>
                   </span>
                   <span className="contact-action-arrow" aria-hidden="true">&rarr;</span>
                 </a>
@@ -298,12 +353,10 @@ function App() {
   const [slantScrollOffset, setSlantScrollOffset] = useState(0);
   
   const [showExpandedGallery, setShowExpandedGallery] = useState(false);
-  const [fullGalleryLightbox, setFullGalleryLightbox] = useState(null);
+  const [fullGalleryLightboxIndex, setFullGalleryLightboxIndex] = useState(null);
   const [galleryOrientations, setGalleryOrientations] = useState({});
 
   useEffect(() => {
-    const allGalleryImages = [...initialGalleryImages, ...extendedGalleryImages];
-
     const loadOrientations = async () => {
       const nextOrientations = {};
 
@@ -318,12 +371,12 @@ function App() {
   }, []);
 
   useEffect(() => {
-    document.body.style.overflow = fullGalleryLightbox ? 'hidden' : '';
+    document.body.style.overflow = fullGalleryLightboxIndex !== null ? 'hidden' : '';
 
     return () => {
       document.body.style.overflow = '';
     };
-  }, [fullGalleryLightbox]);
+  }, [fullGalleryLightboxIndex]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -489,11 +542,11 @@ function App() {
                     rel="noopener noreferrer" 
                     className="hero-btn hero-btn-outline"
                   >
-                    Contact us in Facebook <span>&rarr;</span>
+                    Message us in Facebook <span>&rarr;</span>
                   </a>
 
                   <a href="tel:+639179610770" className="hero-btn hero-btn-solid">
-                    +63 917-961-0770 
+                    Call us now!
                     <img src={phoneIcon} alt="Phone Icon" className="btn-icon" />
                   </a>
 
@@ -713,14 +766,14 @@ function App() {
                   src={imgSrc} 
                   alt={`Gallery ${index + 7}`}
                   className="gallery-item reveal-wrapper visible"
-                  onClick={() => setFullGalleryLightbox(imgSrc)}
+                  onClick={() => setFullGalleryLightboxIndex(index)}
                   aria-label={`Open gallery image ${index + 7}`}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault();
-                      setFullGalleryLightbox(imgSrc);
+                      setFullGalleryLightboxIndex(index);
                     }
                   }}
                 />
@@ -733,14 +786,14 @@ function App() {
                   alt={`Gallery ${index + 16}`}
                   className="gallery-item"
                   style={{ animation: 'fadeIn 0.5s ease-out forwards' }}
-                  onClick={() => setFullGalleryLightbox(imgSrc)}
+                  onClick={() => setFullGalleryLightboxIndex(initialGalleryImages.length + index)}
                   aria-label={`Open gallery image ${index + 16}`}
                   role="button"
                   tabIndex={0}
                   onKeyDown={(event) => {
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault();
-                      setFullGalleryLightbox(imgSrc);
+                      setFullGalleryLightboxIndex(initialGalleryImages.length + index);
                     }
                   }}
                 />
@@ -758,11 +811,26 @@ function App() {
         </section>
 
         {/* --- NEW LIGHTBOX MODAL --- */}
-        {fullGalleryLightbox && createPortal(
-          <div className="lightbox-overlay" onClick={() => setFullGalleryLightbox(null)} role="dialog" aria-modal="true">
+        {fullGalleryLightboxIndex !== null && createPortal(
+          <div className="lightbox-overlay" onClick={() => setFullGalleryLightboxIndex(null)} role="dialog" aria-modal="true">
             <div className="lightbox-content-wrapper" onClick={(event) => event.stopPropagation()}>
-              <img src={fullGalleryLightbox} alt="Expanded gallery view" className="lightbox-media" />
+              <button type="button" className="lightbox-close" onClick={() => setFullGalleryLightboxIndex(null)} aria-label="Close image view">
+                &times;
+              </button>
+              <img src={allGalleryImages[fullGalleryLightboxIndex]} alt="Expanded gallery view" className="lightbox-media" />
             </div>
+            <button type="button" className="lightbox-nav lightbox-nav-left" onClick={(event) => {
+              event.stopPropagation();
+              setFullGalleryLightboxIndex((current) => (current - 1 + allGalleryImages.length) % allGalleryImages.length);
+            }} aria-label="Previous image">
+              &#8249;
+            </button>
+            <button type="button" className="lightbox-nav lightbox-nav-right" onClick={(event) => {
+              event.stopPropagation();
+              setFullGalleryLightboxIndex((current) => (current + 1) % allGalleryImages.length);
+            }} aria-label="Next image">
+              &#8250;
+            </button>
           </div>,
           document.body
         )}
